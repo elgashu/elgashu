@@ -1,0 +1,90 @@
+== Introduction
+
+When you have a service based on user accounts with passwords, it is recommended to check them against passwords that appeared in data breaches:
+
+.https://www.nist.gov/itl/tig/special-publication-800-63-3[NIST's Digital Identity Guidelines]
+____
+When processing requests to establish and change memorized secrets, verifiers SHALL compare the prospective secrets against a list that contains values known to be commonly-used, expected, or compromised. For example, the list MAY include, but is not limited to: Passwords obtained from previous breach corpuses.
+____
+
+Security expert https://www.troyhunt.com/[Troy Hunt] provides a https://www.troyhunt.com/introducing-306-million-freely-downloadable-pwned-passwords/[collection of over 320 million breached passwords] to help you do this.
+
+Elgashu is a Java library and CLI tool that implements a local lookup of passwords against this collection.
+
+
+== FAQ
+
+Why not use Troy Hunt's https://haveibeenpwned.com/Passwords[online checking API]?::
+    As mentioned by Troy on the page linked above, you should not send passwords that are (about to be) actually used to any outside party, not even those you deem trustworthy.
+
+Why not just put it into my system's production database?::
+    Uncompressed, the breached password files take up 13.4 GB. Chances are your production database is smaller than that and you do not want to spend more disk space (and money) for the breached passwords than for your actual production data. The same data takes up 6.4 GB in Elgashu's binary format (including indexes).
+
+Where should I keep Elgashu and its data files?::
+    Put it on your application servers.
+    In a cloud environment like Amazon AWS, you can put the data file on an ephemeral disk that does not generate costs, but is deleted when the machine is shut down.
+
+Can't I do basically the same thing with a separate installation of some database?::
+    Sure, but that may be considered overkill in terms of complexity and maintainability.
+    Keep in mind that databases are geared towards _changing_ data, whereas the breached passwords collection is rarely updated, and if it is, it's only to add more passwords.
+
+What does the name "Elgashu" mean?::
+    Nothing, really. It was created using a word generator to have a short, unique name that works well with search engines.
+
+== Setup
+
+. Build Elgashu using Maven (soon, Elgashu binaries will be up on Maven Central)
++
+----
+mvn install
+----
+. Download the password hash archives from the https://haveibeenpwned.com/Passwords[Pwned Passwords page]
+. Convert each password hash archive using
++
+----
+java -jar path-to-elgashu.jar convertArchive --archive=pwned-passwords-1.0.txt.7z --dataFile=pwned-passwords-1.0
+----
++
+Next to the data file, Elgashu will create an index file with a `.index` suffix.
+
+
+== Implementing lookups in your application
+
+. Hash the potential password using SHA1
+. Check the breached passwords collection for that hash
+
+If your application uses Java, the second step is easy:
+
+. Instantiate `com.github.elgashu.core.Lookup`, passing the data and index file
+. Call the `boolean lookup(String hashString)` or `boolean lookup(byte[] hashBytes)` method
+
+For other platforms, implement the lookup using a binary search algorithm.
+
+
+=== File formats
+
+==== Data file
+
+* The file does not have a header or footer.
+* Each hash is saved using 20 bytes. The bytes appear in the same order as in the hexadecimal hashes.
+* The hashes appear in the same order as in the original archive, i.e. sorted ascending.
+
+==== Index file
+
+* The file does not have a header or footer.
+* Each index entry consists of a 20 byte hash (see above) followed by a 4-byte position (high byte first).
+** For example, if hash `0214DAC83BE47584C1CD9196E00B009BC78A83` appears at position 10000 (0x2710), it is stored as
++
+----
+02 14 da c8 3b e4 75 84 c1 cd 91 96 e0 0b 00 9b c7 8a 83 00 00 27 10
+----
+
+
+== Future improvements
+
+* Binary releases downloadable on Maven Central
+* Make the library available separately from the CLI, which is a fat JAR
+* Command to merge several data files into one
+* Lookup code for other platforms
+
+Pull requests are always welcome.
