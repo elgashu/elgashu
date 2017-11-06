@@ -1,10 +1,7 @@
 package com.github.elgashu;
 
-import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.RandomAccessFile;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
@@ -19,6 +16,8 @@ import net.sf.sevenzipjbinding.simple.ISimpleInArchiveItem;
 
 public class Converter
 {
+    public static final int INDEX_INTERVAL = Integer.parseInt(System.getProperty("indexInterval", "10000"));
+
     public static void main(String[] args) throws IOException
     {
         Instant start = Instant.now();
@@ -43,14 +42,13 @@ public class Converter
         try (
             RandomAccessFile randomAccessFile = new RandomAccessFile(archivePath.toFile(), "r");
             IInArchive inArchive = SevenZip.openInArchive(null, new RandomAccessFileInStream(randomAccessFile));
-            OutputStream databaseOutputStream = new BufferedOutputStream(Files.newOutputStream(targetPath)))
+            DatabaseCreator databaseCreator = new DatabaseCreator(INDEX_INTERVAL, targetPath))
         {
             ISimpleInArchive simpleInterface = inArchive.getSimpleInterface();
 
             for (ISimpleInArchiveItem item : simpleInterface.getArchiveItems())
             {
-                try (HashFileProcessor hashFileProcessor = new HashFileProcessor(
-                    item.getSize(), databaseOutputStream))
+                try (HashFileProcessor hashFileProcessor = new HashFileProcessor(item.getSize(), databaseCreator))
                 {
                     ExtractOperationResult result = item.extractSlow(hashFileProcessor);
                     if (result != ExtractOperationResult.OK)

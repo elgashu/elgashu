@@ -2,6 +2,8 @@ package com.github.elgashu;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.Duration;
 import java.time.Instant;
@@ -15,19 +17,24 @@ public class Lookup implements AutoCloseable
 {
     private static final int HASH_BYTES = 20;
     private static final Comparator<byte[]> COMPARATOR = UnsignedBytes.lexicographicalComparator();
+    private final Index index;
 
     public static void main(String[] args) throws IOException
     {
-        try (Lookup instance = new Lookup(args[0]))
+        Path dataFile = Paths.get(args[0]);
+        Path indexFile = Index.getIndexFile(dataFile);
+        try (Lookup instance = new Lookup(dataFile, indexFile))
         {
             Instant start = Instant.now();
             boolean result = instance.lookup(args[1]);
             Duration duration = Duration.between(start, Instant.now());
 
-            System.out.println(result);
             System.out.println(
                 MessageFormat.format(
-                    "Stats: searched {0} hashes in {1}", instance.getHashCount(), Durations.format(duration)));
+                    "Searched {0} hashes in {1}",
+                    instance.getHashCount(),
+                    Durations.format(duration)));
+            System.out.println(MessageFormat.format("Result: {0}", result));
         }
     }
 
@@ -35,10 +42,11 @@ public class Lookup implements AutoCloseable
 
     private final int hashCount;
 
-    public Lookup(String dataFilePath) throws IOException
+    public Lookup(Path dataFile, Path indexFile) throws IOException
     {
-        dataFile = new RandomAccessFile(dataFilePath, "r");
-        hashCount = (int) (dataFile.length() / 20);
+        this.dataFile = new RandomAccessFile(dataFile.toFile(), "r");
+        index = new Index(indexFile);
+        hashCount = (int) (this.dataFile.length() / 20);
     }
 
     public int getHashCount()
@@ -54,12 +62,14 @@ public class Lookup implements AutoCloseable
 
     private boolean lookup(byte[] hashBytes) throws IOException
     {
-        long lowIndex = 0;
-        long highIndex = getHashCount() - 1;
+        Index.Bounds bounds = index.getBounds(hashBytes);
+        int lowIndex = bounds.getLower();
+        int highIndex = bounds.getHigher();
         while (lowIndex <= highIndex)
         {
-            long middleIndex = lowIndex + (highIndex - lowIndex) / 2;
-            int comparison = COMPARATOR.compare(hashBytes, readHashByIndex(middleIndex));
+            int middleIndex = lowIndex + (highIndex - lowIndex) / 2;
+            byte[] middleHash = readHashByIndex(middleIndex);
+            int comparison = COMPARATOR.compare(hashBytes, middleHash);
             if (comparison < 0)
             {
                 highIndex = middleIndex - 1;

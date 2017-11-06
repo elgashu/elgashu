@@ -4,8 +4,12 @@ import java.time.Duration;
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
-public class Durations
+public final class Durations
 {
+    private Durations()
+    {
+    }
+
     public static String format(Duration duration)
     {
         long millis = duration.toMillis();
