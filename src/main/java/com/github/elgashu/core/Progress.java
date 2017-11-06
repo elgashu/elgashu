@@ -13,13 +13,15 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package com.github.elgashu;
+package com.github.elgashu.core;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.time.Duration;
 import java.time.Instant;
+
+import com.github.elgashu.util.Durations;
 
 public class Progress implements Closeable
 {

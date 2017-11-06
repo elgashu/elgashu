@@ -13,14 +13,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package com.github.elgashu;
+package com.github.elgashu.core;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.Duration;
-import java.time.Instant;
 
 import net.sf.sevenzipjbinding.ExtractOperationResult;
 import net.sf.sevenzipjbinding.IInArchive;
@@ -29,43 +26,36 @@ import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 import net.sf.sevenzipjbinding.simple.ISimpleInArchive;
 import net.sf.sevenzipjbinding.simple.ISimpleInArchiveItem;
 
-public class Converter
+public class ArchiveConverter
 {
-    public static final int INDEX_INTERVAL = Integer.parseInt(System.getProperty("indexInterval", "10000"));
+    private final Path archivePath;
+    private final Path targetPath;
+    private final int indexInterval;
+    private Path indexFile;
 
-    public static void main(String[] args) throws IOException
+    public ArchiveConverter(Path archivePath, Path targetPath, Path indexFile, int indexInterval)
     {
-        Instant start = Instant.now();
-
-        new Converter(args[0], args[1]).run();
-
-        Duration duration = Duration.between(start, Instant.now());
-        System.out.println("Duration: " + Durations.format(duration));
+        this.archivePath = archivePath;
+        this.targetPath = targetPath;
+        this.indexFile = indexFile;
+        this.indexInterval = indexInterval;
     }
 
-    private Path archivePath;
-    private Path targetPath;
-
-    public Converter(String archivePath, String targetPath)
-    {
-        this.archivePath = Paths.get(archivePath);
-        this.targetPath = Paths.get(targetPath);
-    }
-
-    private void run() throws IOException
+    public void run() throws IOException
     {
         try (
             RandomAccessFile randomAccessFile = new RandomAccessFile(archivePath.toFile(), "r");
             IInArchive inArchive = SevenZip.openInArchive(null, new RandomAccessFileInStream(randomAccessFile));
-            DatabaseCreator databaseCreator = new DatabaseCreator(INDEX_INTERVAL, targetPath))
+            DatabaseCreator databaseCreator = new DatabaseCreator(
+                targetPath, indexFile, indexInterval))
         {
             ISimpleInArchive simpleInterface = inArchive.getSimpleInterface();
 
             for (ISimpleInArchiveItem item : simpleInterface.getArchiveItems())
             {
-                try (HashFileProcessor hashFileProcessor = new HashFileProcessor(item.getSize(), databaseCreator))
+                try (ArchiveProcessor archiveProcessor = new ArchiveProcessor(item.getSize(), databaseCreator))
                 {
-                    ExtractOperationResult result = item.extractSlow(hashFileProcessor);
+                    ExtractOperationResult result = item.extractSlow(archiveProcessor);
                     if (result != ExtractOperationResult.OK)
                     {
                         System.err.println("Error extracting item: " + result);

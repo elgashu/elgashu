@@ -13,57 +13,45 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package com.github.elgashu;
+package com.github.elgashu.core;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 
-import org.testng.annotations.AfterMethod;
+import javax.xml.bind.DatatypeConverter;
+
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-public class TestLookup
+public class TestIndex
 {
     private TestData testData = new TestData();
-    private Lookup lookup;
+    private Index index;
 
     @BeforeMethod
     public void setUp() throws IOException
     {
-        lookup = new Lookup(testData.getDataFile(), testData.getIndexFile());
+        index = new Index(testData.getIndexFile());
     }
 
-    @AfterMethod
-    public void tearDown() throws IOException
+    @Test(dataProvider = "getBoundsTestData")
+    public void testGetBounds(String hashString, int lower, int higher) throws IOException
     {
-        lookup.close();
+        Index.Bounds bounds = index.getBounds(fromHex(hashString));
+        assertThat(bounds.getLower()).isEqualTo(lower);
+        assertThat(bounds.getHigher()).isEqualTo(higher);
     }
 
-    @Test(dataProvider = "existingHashes")
-    public void testExistingHashes(String hashString) throws IOException
+    private byte[] fromHex(String hashString)
     {
-        boolean result = lookup.lookup(hashString);
-        assertThat(result).isTrue();
-    }
-
-    @DataProvider
-    private Object[][] existingHashes()
-    {
-        return testData.getExistingHashes();
-    }
-
-    @Test(dataProvider = "missingHashes")
-    public void testMissingHashes(String hashString) throws IOException
-    {
-        boolean result = lookup.lookup(hashString);
-        assertThat(result).isFalse();
+        return DatatypeConverter.parseHexBinary(hashString);
     }
 
     @DataProvider
-    private Object[][] missingHashes()
+    private Object[][] getBoundsTestData()
     {
-        return testData.getMissingHashes();
+        return testData.getIndexBoundsTestData();
     }
 }

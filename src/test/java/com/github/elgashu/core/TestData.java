@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package com.github.elgashu;
+package com.github.elgashu.core;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -22,7 +22,7 @@ import java.nio.file.Path;
 
 import javax.xml.bind.DatatypeConverter;
 
-public class TestData
+class TestData
 {
     public static final String BEFORE_A = "0123e72be0377ab0e899791a9cbf2f0613813c18";
     public static final String A = "0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33";

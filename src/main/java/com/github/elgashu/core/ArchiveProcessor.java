@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package com.github.elgashu;
+package com.github.elgashu.core;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -23,7 +23,7 @@ import java.text.MessageFormat;
 import net.sf.sevenzipjbinding.ISequentialOutStream;
 import net.sf.sevenzipjbinding.SevenZipException;
 
-public class HashFileProcessor implements ISequentialOutStream, Closeable
+class ArchiveProcessor implements ISequentialOutStream, Closeable
 {
     private static final int BINARY_HASH_LENGTH = 20;
     private static final int HEX_HASH_LENGTH = BINARY_HASH_LENGTH * 2;
@@ -37,7 +37,7 @@ public class HashFileProcessor implements ISequentialOutStream, Closeable
     private byte[] hash = new byte[BINARY_HASH_LENGTH];
     private int bytesInHash;
 
-    public HashFileProcessor(long size, DatabaseCreator databaseCreator)
+    public ArchiveProcessor(long size, DatabaseCreator databaseCreator)
     {
         System.out.println(MessageFormat.format("Number of hashes: {0}", size / HEX_HASH_AND_EOL_LENGTH));
         this.databaseCreator = databaseCreator;
@@ -115,7 +115,8 @@ public class HashFileProcessor implements ISequentialOutStream, Closeable
     {
 
         hash[bytesInHash++] = b;
-        if (bytesInHash == BINARY_HASH_LENGTH) {
+        if (bytesInHash == BINARY_HASH_LENGTH)
+        {
             writeToDatabase();
             bytesInHash = 0;
         }

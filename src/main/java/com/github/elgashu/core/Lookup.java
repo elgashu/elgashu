@@ -13,15 +13,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package com.github.elgashu;
+package com.github.elgashu.core;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.MessageFormat;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.Comparator;
 
 import javax.xml.bind.DatatypeConverter;
@@ -32,35 +28,15 @@ public class Lookup implements AutoCloseable
 {
     private static final int HASH_BYTES = 20;
     private static final Comparator<byte[]> COMPARATOR = UnsignedBytes.lexicographicalComparator();
+
     private final Index index;
-
-    public static void main(String[] args) throws IOException
-    {
-        Path dataFile = Paths.get(args[0]);
-        Path indexFile = Index.getIndexFile(dataFile);
-        try (Lookup instance = new Lookup(dataFile, indexFile))
-        {
-            Instant start = Instant.now();
-            boolean result = instance.lookup(args[1]);
-            Duration duration = Duration.between(start, Instant.now());
-
-            System.out.println(
-                MessageFormat.format(
-                    "Searched {0} hashes in {1}",
-                    instance.getHashCount(),
-                    Durations.format(duration)));
-            System.out.println(MessageFormat.format("Result: {0}", result));
-        }
-    }
-
     private final RandomAccessFile dataFile;
-
     private final int hashCount;
 
-    public Lookup(Path dataFile, Path indexFile) throws IOException
+    public Lookup(Path dataFile, Index index) throws IOException
     {
         this.dataFile = new RandomAccessFile(dataFile.toFile(), "r");
-        index = new Index(indexFile);
+        this.index = index;
         hashCount = (int) (this.dataFile.length() / 20);
     }
 

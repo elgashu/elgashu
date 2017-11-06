@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package com.github.elgashu;
+package com.github.elgashu.core;
 
 import java.io.BufferedOutputStream;
 import java.io.Closeable;
@@ -23,28 +23,31 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import com.github.elgashu.util.Closables;
+
 public class DatabaseCreator implements Closeable
 {
-    private final int indexInterval;
-    private final OutputStream database;
+    private final OutputStream dataFile;
     private final DataOutputStream index;
+    private final int indexInterval;
 
     private int length;
     private byte[] lastHash;
 
-    public DatabaseCreator(int indexInterval, Path file) throws IOException
+    public DatabaseCreator(Path dataFile, Path indexFile, int indexInterval) throws IOException
     {
         this.indexInterval = indexInterval;
-        database = new BufferedOutputStream(Files.newOutputStream(file));
-        index = new DataOutputStream(new BufferedOutputStream(Files.newOutputStream(Index.getIndexFile(file))));
+        this.dataFile = new BufferedOutputStream(Files.newOutputStream(dataFile));
+        index = new DataOutputStream(new BufferedOutputStream(Files.newOutputStream(indexFile)));
     }
 
     public void add(byte[] hash) throws IOException
     {
-        if (length == 0 || length % indexInterval == 0) {
+        if (length == 0 || length % indexInterval == 0)
+        {
             addToIndex(hash, length);
         }
-        database.write(hash);
+        dataFile.write(hash);
         length++;
         lastHash = hash;
     }
@@ -59,7 +62,7 @@ public class DatabaseCreator implements Closeable
     public void close() throws IOException
     {
         addToIndex(lastHash, length - 1);
-        Closables.tryClose(database, "database");
+        Closables.tryClose(dataFile, "dataFile");
         Closables.tryClose(index, "index");
     }
 }

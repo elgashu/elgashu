@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package com.github.elgashu;
+package com.github.elgashu.core;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -97,9 +97,9 @@ public class Index
     }
 
     /**
-     * Determines the initial bounds for a binary search in the hashes. Note that {@link
-     * com.github.elgashu.Index.Bounds} with equal <code>lower</code> and <code>higher</code> values do not imply that
-     * the hash is found inside the database; only a subsequent search can determine this.
+     * Determines the initial bounds for a binary search in the hashes. Note that {@link Index.Bounds} with equal
+     * <code>lower</code> and <code>higher</code> values do not imply that the hash is found inside the database; only a
+     * subsequent search can determine this.
      *
      * @param hashBytes the hash to check
      *

@@ -13,29 +13,28 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package com.github.elgashu;
+package com.github.elgashu.util;
 
-import java.io.Closeable;
-import java.io.IOException;
+import java.time.Duration;
 
-public final class Closables
+import org.apache.commons.lang3.time.DurationFormatUtils;
+
+public final class Durations
 {
-    private Closables()
+    private Durations()
     {
     }
 
-    public static void tryClose(Closeable closeable, String name)
+    public static String format(Duration duration)
     {
-        if (closeable != null) {
-            try
-            {
-                closeable.close();
-            }
-            catch (IOException e)
-            {
-                System.err.print("Could not close " + name);
-                e.printStackTrace();
-            }
+        long millis = duration.toMillis();
+        if (millis >= 1000)
+        {
+            return DurationFormatUtils.formatDurationWords(millis, true, true);
+        }
+        else
+        {
+            return millis + " milliseconds";
         }
     }
 }

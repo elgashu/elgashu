@@ -13,45 +13,57 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package com.github.elgashu;
+package com.github.elgashu.core;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 
-import javax.xml.bind.DatatypeConverter;
-
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-public class TestIndex
+public class TestLookup
 {
     private TestData testData = new TestData();
-    private Index index;
+    private Lookup lookup;
 
     @BeforeMethod
     public void setUp() throws IOException
     {
-        index = new Index(testData.getIndexFile());
+        lookup = new Lookup(testData.getDataFile(), new Index(testData.getIndexFile()));
     }
 
-    @Test(dataProvider = "getBoundsTestData")
-    public void testGetBounds(String hashString, int lower, int higher) throws IOException
+    @AfterMethod
+    public void tearDown() throws IOException
     {
-        Index.Bounds bounds = index.getBounds(fromHex(hashString));
-        assertThat(bounds.getLower()).isEqualTo(lower);
-        assertThat(bounds.getHigher()).isEqualTo(higher);
+        lookup.close();
     }
 
-    private byte[] fromHex(String hashString)
+    @Test(dataProvider = "existingHashes")
+    public void testExistingHashes(String hashString) throws IOException
     {
-        return DatatypeConverter.parseHexBinary(hashString);
+        boolean result = lookup.lookup(hashString);
+        assertThat(result).isTrue();
     }
 
     @DataProvider
-    private Object[][] getBoundsTestData()
+    private Object[][] existingHashes()
     {
-        return testData.getIndexBoundsTestData();
+        return testData.getExistingHashes();
+    }
+
+    @Test(dataProvider = "missingHashes")
+    public void testMissingHashes(String hashString) throws IOException
+    {
+        boolean result = lookup.lookup(hashString);
+        assertThat(result).isFalse();
+    }
+
+    @DataProvider
+    private Object[][] missingHashes()
+    {
+        return testData.getMissingHashes();
     }
 }
