@@ -33,9 +33,10 @@ What does the name "Elgashu" mean?::
 
 == Setup
 
-. Build Elgashu using Maven (soon, Elgashu binaries will be up on Maven Central)
+. Check out the `develop` branch and build Elgashu using Maven (soon, Elgashu binaries will be up on Maven Central)
 +
 ----
+git clone -b develop https://git@github.com/elgashu/elgashu.git
 mvn install
 ----
 . Download the password hash archives from the https://haveibeenpwned.com/Passwords[Pwned Passwords page]
