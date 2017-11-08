@@ -33,12 +33,7 @@ What does the name "Elgashu" mean?::
 
 == Setup
 
-. Check out the `develop` branch and build Elgashu using Maven (soon, Elgashu binaries will be up on Maven Central)
-+
-----
-git clone -b develop https://git@github.com/elgashu/elgashu.git
-mvn install
-----
+. Download `elgashu-VERSION.jar` from the https://github.com/elgashu/elgashu/releases[releases page]
 . Download the password hash archives from the https://haveibeenpwned.com/Passwords[Pwned Passwords page]
 . Convert each password hash archive using
 +
@@ -86,6 +81,6 @@ For other platforms, implement the lookup using a binary search algorithm.
 * Binary releases downloadable on Maven Central
 * Make the library available separately from the CLI, which is a fat JAR
 * Command to merge several data files into one
-* Lookup code for other platforms
+* Lookup code for languages other than Java
 
 Pull requests are always welcome.
