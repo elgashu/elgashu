@@ -4,7 +4,7 @@
 
     <groupId>com.github.elgashu</groupId>
     <artifactId>elgashu</artifactId>
-    <version>0.1.1</version>
+    <version>0.2-SNAPSHOT</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Local lookups of the Pwned Passwords data - https://haveibeenpwned.com/Passwords</description>
