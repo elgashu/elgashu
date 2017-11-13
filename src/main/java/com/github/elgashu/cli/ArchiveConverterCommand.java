@@ -15,8 +15,8 @@
  */
 package com.github.elgashu.cli;
 
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 
@@ -33,13 +33,17 @@ public class ArchiveConverterCommand
 {
     @Command
     public void convertArchive(
-        @Option("archive") @Required Path archive,
-        @Option("dataFile") @Required Path dataFile,
+        @Option("archive") @Required File archive,
+        @Option("dataFile") @Required File dataFile,
         @Option("indexInterval") @Default("10000") int indexInterval) throws IOException
     {
         Instant start = Instant.now();
 
-        new ArchiveConverter(archive, dataFile, Index.getIndexFile(dataFile), indexInterval).run();
+        new ArchiveConverter(
+            archive.toPath(),
+            dataFile.toPath(),
+            Index.getIndexFile(dataFile.toPath()),
+            indexInterval).run();
 
         Duration duration = Duration.between(start, Instant.now());
         System.out.println("Duration: " + Durations.format(duration));
