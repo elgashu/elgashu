@@ -40,10 +40,7 @@ public class ArchiveConverterCommand
         Instant start = Instant.now();
 
         new ArchiveConverter(
-            archive.toPath(),
-            dataFile.toPath(),
-            Index.getIndexFile(dataFile.toPath()),
-            indexInterval).run();
+            archive.toPath(), dataFile.toPath(), Index.getIndexFile(dataFile.toPath()), indexInterval).run();
 
         Duration duration = Duration.between(start, Instant.now());
         System.out.println("Duration: " + Durations.format(duration));
