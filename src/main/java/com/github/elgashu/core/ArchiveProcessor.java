@@ -20,10 +20,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.text.MessageFormat;
 
-import net.sf.sevenzipjbinding.ISequentialOutStream;
-import net.sf.sevenzipjbinding.SevenZipException;
-
-class ArchiveProcessor implements ISequentialOutStream, Closeable
+class ArchiveProcessor implements Closeable
 {
     private static final int BINARY_HASH_LENGTH = 20;
     private static final int HEX_HASH_LENGTH = BINARY_HASH_LENGTH * 2;
@@ -44,11 +41,11 @@ class ArchiveProcessor implements ISequentialOutStream, Closeable
         progress = new Progress(size);
     }
 
-    @Override
-    public int write(byte[] hexBytes) throws SevenZipException
+    public int write(byte[] hexBytes, int offset, int length)
     {
-        for (byte b : hexBytes)
+        for (int i = 0; i < length; i++)
         {
+            byte b = hexBytes[offset + i];
             write(b);
             progress.update();
         }
