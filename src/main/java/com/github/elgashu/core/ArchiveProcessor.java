@@ -113,7 +113,6 @@ class ArchiveProcessor implements ISequentialOutStream, Closeable
 
     private void addToHash(byte b)
     {
-
         hash[bytesInHash++] = b;
         if (bytesInHash == BINARY_HASH_LENGTH)
         {
