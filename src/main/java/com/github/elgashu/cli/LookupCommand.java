@@ -15,6 +15,7 @@
  */
 package com.github.elgashu.cli;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.text.MessageFormat;
@@ -32,11 +33,12 @@ import com.github.elgashu.util.Durations;
 public class LookupCommand
 {
     @Command
-    public static void lookup(@Option("dataFile") @Required Path dataFile, @Option("hash") @Required String hash)
+    public static void lookup(@Option("dataFile") @Required File dataFile, @Option("hash") @Required String hash)
         throws IOException
     {
-        Index index = getIndex(dataFile);
-        try (Lookup instance = new Lookup(dataFile, index))
+        Path dataFilePath = dataFile.toPath();
+        Index index = getIndex(dataFilePath);
+        try (Lookup instance = new Lookup(dataFilePath, index))
         {
             Instant start = Instant.now();
             boolean result = instance.lookup(hash);
