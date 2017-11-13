@@ -4,7 +4,7 @@
 
     <groupId>com.github.elgashu</groupId>
     <artifactId>elgashu</artifactId>
-    <version>0.1.2</version>
+    <version>0.2</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Local lookups of the Pwned Passwords data - https://haveibeenpwned.com/Passwords</description>
@@ -56,14 +56,9 @@
             <version>23.3-jre</version>
         </dependency>
         <dependency>
-            <groupId>net.sf.sevenzipjbinding</groupId>
-            <artifactId>sevenzipjbinding</artifactId>
-            <version>9.20-2.00beta</version>
-        </dependency>
-        <dependency>
-            <groupId>net.sf.sevenzipjbinding</groupId>
-            <artifactId>sevenzipjbinding-all-platforms</artifactId>
-            <version>9.20-2.00beta</version>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.15</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -86,6 +81,11 @@
             <groupId>org.tomitribe</groupId>
             <artifactId>tomitribe-crest</artifactId>
             <version>${crest.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.tukaani</groupId>
+            <artifactId>xz</artifactId>
+            <version>1.6</version>
         </dependency>
     </dependencies>
 
@@ -185,7 +185,7 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-shade-plugin</artifactId>
-                    <version>2.1</version>
+                    <version>3.1.0</version>
                     <executions>
                         <execution>
                             <goals>
@@ -193,6 +193,13 @@
                             </goals>
                             <phase>package</phase>
                             <configuration>
+                                <artifactSet>
+                                    <!-- Work around https://issues.apache.org/jira/browse/MSHADE-267 -->
+                                    <excludes>
+                                        <exclude>junit:junit</exclude>
+                                        <exclude>org.hamcrest:hamcrest-core</exclude>
+                                    </excludes>
+                                </artifactSet>
                                 <transformers>
                                     <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                         <mainClass>org.tomitribe.crest.Main</mainClass>

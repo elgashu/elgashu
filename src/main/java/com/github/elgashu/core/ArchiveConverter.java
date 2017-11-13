@@ -16,18 +16,15 @@
 package com.github.elgashu.core;
 
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.file.Path;
 
-import net.sf.sevenzipjbinding.ExtractOperationResult;
-import net.sf.sevenzipjbinding.IInArchive;
-import net.sf.sevenzipjbinding.SevenZip;
-import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
-import net.sf.sevenzipjbinding.simple.ISimpleInArchive;
-import net.sf.sevenzipjbinding.simple.ISimpleInArchiveItem;
+import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
+import org.apache.commons.compress.archivers.sevenz.SevenZFile;
 
 public class ArchiveConverter
 {
+    private static final int BUFFER_SIZE = 8 * 1024;
+
     private final Path archivePath;
     private final Path targetPath;
     private final int indexInterval;
@@ -44,22 +41,22 @@ public class ArchiveConverter
     public void run() throws IOException
     {
         try (
-            RandomAccessFile randomAccessFile = new RandomAccessFile(archivePath.toFile(), "r");
-            IInArchive inArchive = SevenZip.openInArchive(null, new RandomAccessFileInStream(randomAccessFile));
-            DatabaseCreator databaseCreator = new DatabaseCreator(
-                targetPath, indexFile, indexInterval))
+            SevenZFile archive = new SevenZFile(archivePath.toFile());
+            DatabaseCreator databaseCreator = new DatabaseCreator(targetPath, indexFile, indexInterval))
         {
-            ISimpleInArchive simpleInterface = inArchive.getSimpleInterface();
-
-            for (ISimpleInArchiveItem item : simpleInterface.getArchiveItems())
+            SevenZArchiveEntry entry = archive.getNextEntry();
+            try (ArchiveProcessor archiveProcessor = new ArchiveProcessor(entry.getSize(), databaseCreator))
             {
-                try (ArchiveProcessor archiveProcessor = new ArchiveProcessor(item.getSize(), databaseCreator))
+                byte[] buffer = new byte[BUFFER_SIZE];
+
+                while (true)
                 {
-                    ExtractOperationResult result = item.extractSlow(archiveProcessor);
-                    if (result != ExtractOperationResult.OK)
+                    int bytesRead = archive.read(buffer, 0, buffer.length);
+                    if (bytesRead == -1)
                     {
-                        System.err.println("Error extracting item: " + result);
+                        break;
                     }
+                    archiveProcessor.write(buffer, 0, bytesRead);
                 }
             }
         }
